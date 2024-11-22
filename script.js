@@ -1,36 +1,66 @@
 document.addEventListener('DOMContentLoaded', () => {
     const display = document.querySelector('.display');
-    const buttons = document.querySelectorAll('.button_grid button');
-
     let currentInput = '';
-    let isEvaluated = false;
 
-    buttons.forEach(button => {
-        button.addEventListener('click', () => {
-            const value = button.textContent; 
+    // 버튼 클릭 이벤트를 처리하는 함수
+    document.querySelector('.button_grid').addEventListener('click', (event) => {
+        const target = event.target;
 
-            if (!isNaN(value) || ['+', '-', '*', '/'].includes(value)) {
-                if (isEvaluated) {
-                    currentInput = '';
-                    isEvaluated = false;
-                }
+        // 버튼이 아닌 요소는 무시
+        if (target.tagName !== 'BUTTON') return;
 
-                currentInput += value;
-                display.value = currentInput;
-            } else if (value === '=') {
+        const value = target.textContent;
 
-                try {
-
-                    currentInput = eval(currentInput).toString();
-                    display.value = currentInput;
-                    isEvaluated = true; 
-                } catch {
-                    display.value = 'Error';
-                }
-            } else if (value === 'C') {
-                currentInput = '';
-                display.value = '';
-            }
-        });
+        // 숫자 처리
+        if (!isNaN(value)) {
+            handleNumber(value);
+        }
+        // 연산자 처리
+        else if (['+', '-', '*', '/'].includes(value)) {
+            handleOperator(value);
+        }
+        // 계산 결과 처리
+        else if (value === '=') {
+            handleEvaluation();
+        }
+        // 초기화 처리
+        else if (value === 'C') {
+            handleClear();
+        }
     });
+
+    // 숫자 입력 처리
+    function handleNumber(value) {
+        currentInput += value;
+        display.value = currentInput;
+    }
+
+    // 연산자 입력 처리
+    function handleOperator(value) {
+        if (['+', '-', '*', '/'].includes(currentInput.slice(-1))) {
+            // 이미 연산자로 끝나있다면 교체
+            currentInput = currentInput.slice(0, -1) + value;
+        } else {
+            currentInput += value;
+        }
+        display.value = currentInput;
+    }
+
+    // 계산 처리
+    function handleEvaluation() {
+        try {
+            // Math.js로 안전하게 계산
+            currentInput = math.evaluate(currentInput).toString();
+            display.value = currentInput;
+        } catch (error) {
+            display.value = 'Error';
+            currentInput = '';
+        }
+    }
+
+    // 초기화 처리
+    function handleClear() {
+        currentInput = '';
+        display.value = '';
+    }
 });
